@@ -7,6 +7,7 @@ from django.contrib.auth.models import (
     BaseUserManager,   # Base class for creating custom user managers
     PermissionsMixin,  # Adds fields and methods to support Django's permission framework
 )
+from django.conf import settings # Importing Django's settings module
 
 # Custom manager for handling user creation and management
 class UserManager(BaseUserManager):
@@ -46,3 +47,40 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'  # Set email as the unique identifier for authentication
 
     # Additional fields and methods can be added here if needed
+
+#Recipe based on models.model of django, different from our user as the user class mei we were extending the base user model
+class Recipe(models.Model):
+    """Recipe object."""
+
+    # ForeignKey relationship to the User model
+    # This links each recipe to a specific user, ensuring that each recipe is owned by a user.
+    # settings.AUTH_USER_MODEL refers to the custom user model defined in the project settings.
+    # on_delete=models.CASCADE ensures that if a user is deleted, all their associated recipes are also deleted.
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    # CharField for the title of the recipe with a maximum length of 255 characters
+    title = models.CharField(max_length=255)
+
+    # TextField for the description of the recipe.
+    # blank=True allows the description to be optional (i.e., can be left empty).
+    description = models.TextField(blank=True)
+
+    # IntegerField to store the time required to prepare the recipe, in minutes
+    time_minutes = models.IntegerField()
+
+    # DecimalField to store the price of the recipe
+    # max_digits=5 allows for a price up to 999.99
+    # decimal_places=2 ensures that the price is stored with two decimal places
+    price = models.DecimalField(max_digits=5, decimal_places=2)
+
+    # CharField for an optional link to the recipe (e.g., a URL for an online recipe)
+    # blank=True allows this field to be optional
+    link = models.CharField(max_length=255, blank=True)
+
+    # The __str__ method returns the title of the recipe as its string representation
+    # This is useful for displaying the recipe in admin interfaces or when printing the object.
+    def __str__(self):
+        return self.title
